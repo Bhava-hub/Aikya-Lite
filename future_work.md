@@ -58,3 +58,9 @@ Two independent problems needed two independent, targeted fixes:
 2. **Threshold-selection method wasn't suited to severe class imbalance** → fixed by switching from ROC/Youden's J to Precision-Recall/F1.
 
 Fixing only one without the other would not have produced the final result. The other options above remain legitimate "future work" items but weren't necessary to reach a defensible federated-vs-centralized comparison.
+
+### Additions:
+Per-bank standalone comparison — cheapest to build (reuses code you already have), and it's actually your most persuasive evidence for why federation matters at all
+Poisoning attack simulation — moderate effort, high differentiation, ties to your coursework
+Differential privacy — similarly "hot," but more implementation overhead (Opacus has a learning curve) for a comparable narrative payoff
+FedProx / more banks / second dataset — these are more "make the same story slightly more rigorous" rather than adding a genuinely new angle — good if you have real time left, skip if not
