@@ -1,6 +1,10 @@
 venv/
-__pycache__/
-*.pyc
 .env
 .ipynb_checkpoints/
 data/creditcard.csv
+data/*.csv
+federated_model*.pt
+shap_summary.png
+__pycache__/
+*.pyc
+.pytest_cache/
