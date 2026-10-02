@@ -1,15 +1,16 @@
 import sys
-import torch
-import torch.nn as nn
-import pandas as pd
-import numpy as np
-from sklearn.preprocessing import StandardScaler
+
 import flwr as fl
+import pandas as pd
+import torch
+from sklearn.preprocessing import StandardScaler
+from torch import nn
+
 from model import FraudNet
 
-bank_id = sys.argv[1]  # e.g. "0", "1", "2", "3"
+bank_id = sys.argv[1]  # "0", "1", "2" or "3"
 
-# Load this bank's own data only
+# Load this bank's own shard only
 df = pd.read_csv(f"data/bank_{bank_id}.csv")
 X = df.drop("Class", axis=1).values
 y = df["Class"].values.reshape(-1, 1)
@@ -22,7 +23,10 @@ y = torch.tensor(y, dtype=torch.float32)
 
 model = FraudNet(input_dim=X.shape[1])
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-criterion = nn.BCELoss()
+
+# Weighted loss: each fraud case counts as (non-fraud / fraud) normal cases
+pos_weight = torch.tensor([(len(y) - y.sum()) / y.sum()])
+criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
 
 def get_params():
     return [val.cpu().numpy() for val in model.state_dict().values()]
@@ -39,7 +43,7 @@ class FraudClient(fl.client.NumPyClient):
     def fit(self, parameters, config):
         set_params(parameters)
         model.train()
-        for epoch in range(5):  # local epochs per round
+        for epoch in range(10):
             optimizer.zero_grad()
             output = model(X)
             loss = criterion(output, y)
@@ -57,7 +61,6 @@ class FraudClient(fl.client.NumPyClient):
         return loss, len(X), {}
 
 fl.client.start_numpy_client(server_address="127.0.0.1:8080", client=FraudClient())
-
 
 
 """

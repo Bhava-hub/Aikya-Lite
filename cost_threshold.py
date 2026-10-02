@@ -1,9 +1,12 @@
-import torch
-import pandas as pd
 import numpy as np
-from model import FraudNet
-from sklearn.preprocessing import StandardScaler
+import pandas as pd
+import torch
 from scipy.special import expit
+from sklearn.preprocessing import StandardScaler
+
+from model import FraudNet
+from utils import total_cost
+
 # Load test set — including the real Amount column this time
 test_df = pd.read_csv("data/global_test.csv")
 X_test = test_df.drop("Class", axis=1)
@@ -23,12 +26,7 @@ with torch.no_grad():
     
     probs = expit(logits)
 
-def total_cost(y_true, y_pred, amounts, fn_multiplier=3.75, fp_cost=32.50):
-    fn_mask = (y_true == 1) & (y_pred == 0)
-    fp_mask = (y_true == 0) & (y_pred == 1)
-    fn_cost = (amounts[fn_mask] * fn_multiplier).sum()
-    fp_cost_total = fp_mask.sum() * fp_cost
-    return fn_cost + fp_cost_total, fn_cost, fp_cost_total
+
 
 
 # Instead of a fixed linspace, use every unique probability the model actually produced
@@ -58,6 +56,7 @@ print(f"Total cost: ${cost_f1:,.2f} (missed-fraud: ${fn_c_f1:,.2f}, false-alarm:
 
 # Also show precision/recall at the cost-optimal threshold
 from sklearn.metrics import classification_report
+
 best_preds = (probs >= best_row['threshold']).astype(int)
 print("\nClassification report at cost-optimal threshold:")
 print(classification_report(y_test, best_preds, digits=4))

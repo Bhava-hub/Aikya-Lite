@@ -1,13 +1,14 @@
-import torch
-import pandas as pd
 import numpy as np
+import pandas as pd
+import torch
+from sklearn.metrics import (
+    classification_report,
+    precision_recall_curve,
+    roc_auc_score,
+)
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import classification_report, roc_auc_score
+
 from model import FraudNet
-from sklearn.metrics import roc_curve
-from sklearn.metrics import precision_recall_curve
-
-
 
 # Load the held-out test set (never seen during federated training)
 test_df = pd.read_csv("data/global_test.csv")

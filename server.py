@@ -1,7 +1,8 @@
 import flwr as fl
-import numpy as np
-from model import FraudNet
 import torch
+
+from model import FraudNet
+
 
 class SaveModelStrategy(fl.server.strategy.FedAvg):
     def aggregate_fit(self, server_round, results, failures):

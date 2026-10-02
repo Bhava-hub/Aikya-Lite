@@ -1,7 +1,8 @@
-import torch
-import pandas as pd
 import numpy as np
+import pandas as pd
 import shap
+import torch
+
 from model import FraudNet
 
 # Load test data
@@ -12,6 +13,7 @@ feature_names = X_test.columns.tolist()
 
 # Scale — same caveat as before: fit fresh here for this PoC
 from sklearn.preprocessing import StandardScaler
+
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X_test.values)
 
@@ -59,6 +61,7 @@ if shap_values_array.ndim == 3:
 # Save a summary plot across all 3 cases
 shap.summary_plot(shap_values_array, samples_to_explain, feature_names=feature_names, show=False)
 import matplotlib.pyplot as plt
+
 plt.savefig("shap_summary.png", bbox_inches="tight")
 print("\nSaved shap_summary.png")
 
