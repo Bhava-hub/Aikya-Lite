@@ -33,8 +33,7 @@ def test_test_set_is_stratified(frames):
     full, test, _ = frames
     assert test["Class"].mean() == pytest.approx(full["Class"].mean(), abs=1e-4)
 
-
 def test_banks_are_non_iid_by_amount(frames):
     _, _, banks = frames
-    for a, b in itertools.pairwise(banks, banks[1:]):
+    for a, b in itertools.pairwise(banks):
         assert a["Amount"].max() <= b["Amount"].min()
