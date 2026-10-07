@@ -1,12 +1,14 @@
-import sys
 import random
-import torch
-import torch.nn as nn
-import pandas as pd
-import numpy as np
-from sklearn.preprocessing import StandardScaler
+import sys
+
 import flwr as fl
 import mlflow
+import numpy as np
+import pandas as pd
+import torch
+from sklearn.preprocessing import StandardScaler
+from torch import nn
+
 from model import FraudNet
 
 SEED = 42

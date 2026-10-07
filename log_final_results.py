@@ -1,11 +1,11 @@
-import torch
-import pandas as pd
-import numpy as np
 import mlflow
+import pandas as pd
+import torch
 from scipy.special import expit
 from sklearn.metrics import classification_report
+
 from model import FraudNet
-from utils import find_optimal_thresholds, total_cost
+from utils import find_optimal_thresholds
 
 MODEL_PATH = "federated_model.pt"
 RUN_LABEL = "clean_pos_weight_seeded"  # change this per experiment you want to track
@@ -18,6 +18,7 @@ y_test = test_df["Class"].values
 amounts = test_df["Amount"].values
 
 from sklearn.preprocessing import StandardScaler
+
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X_test.values)
 X_tensor = torch.tensor(X_scaled, dtype=torch.float32)
