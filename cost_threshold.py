@@ -18,7 +18,7 @@ X_test_scaled = scaler.fit_transform(X_test.values)
 X_test_tensor = torch.tensor(X_test_scaled, dtype=torch.float32)
 
 model = FraudNet(input_dim=X_test.shape[1])
-model.load_state_dict(torch.load("federated_model_noise0.pt"))
+model.load_state_dict(torch.load("federated_model.pt"))
 model.eval()
 
 with torch.no_grad():

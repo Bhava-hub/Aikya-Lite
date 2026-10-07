@@ -1,16 +1,21 @@
 import sys
-
-import flwr as fl
-import pandas as pd
+import random
 import torch
+import torch.nn as nn
+import pandas as pd
+import numpy as np
 from sklearn.preprocessing import StandardScaler
-from torch import nn
-
+import flwr as fl
+import mlflow
 from model import FraudNet
 
-bank_id = sys.argv[1]  # "0", "1", "2" or "3"
+SEED = 42
+random.seed(SEED)
+np.random.seed(SEED)
+torch.manual_seed(SEED)
 
-# Load this bank's own shard only
+bank_id = sys.argv[1]
+
 df = pd.read_csv(f"data/bank_{bank_id}.csv")
 X = df.drop("Class", axis=1).values
 y = df["Class"].values.reshape(-1, 1)
@@ -24,10 +29,11 @@ y = torch.tensor(y, dtype=torch.float32)
 model = FraudNet(input_dim=X.shape[1])
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-# Weighted loss: each fraud case counts as (non-fraud / fraud) normal cases
 pos_weight = torch.tensor([(len(y) - y.sum()) / y.sum()])
 criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
 
+mlflow.set_experiment("aikya-lite-federated-fraud")
+mlflow.set_tracking_uri("sqlite:///mlflow.db")
 def get_params():
     return [val.cpu().numpy() for val in model.state_dict().values()]
 
@@ -50,6 +56,14 @@ class FraudClient(fl.client.NumPyClient):
             loss.backward()
             optimizer.step()
         print(f"[Bank {bank_id}] local loss: {loss.item():.4f}")
+
+        with mlflow.start_run(run_name=f"bank_{bank_id}", nested=True):
+            mlflow.log_param("bank_id", bank_id)
+            mlflow.log_param("seed", SEED)
+            mlflow.log_param("local_epochs", 10)
+            mlflow.log_param("pos_weight", pos_weight.item())
+            mlflow.log_metric("local_loss", loss.item())
+
         return get_params(), len(X), {}
 
     def evaluate(self, parameters, config):
@@ -61,7 +75,6 @@ class FraudClient(fl.client.NumPyClient):
         return loss, len(X), {}
 
 fl.client.start_numpy_client(server_address="127.0.0.1:8080", client=FraudClient())
-
 
 """
 We considered adding Differential Privacy (DP) to our Federated Learning project because, although the banks never share their raw transaction data, the model updates they send could potentially leak some information about their data.
