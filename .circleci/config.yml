@@ -21,6 +21,10 @@ jobs:
           command: ruff check .
 
       - run:
+          name: Install pytest
+          command: pip install -U pytest
+
+      - run:
           name: Run tests
           command: python3 -m pytest -v
 
